@@ -5,7 +5,6 @@ const { User, Blog, Tag } = require('./sequelize')
 const app = express()
 app.use(bodyParser.json())
 
-const toJ = o => console.log(JSON.stringify(o, null, 2))
 
 // create a user
 app.post('/api/users', (req, res) => {
@@ -25,9 +24,9 @@ app.post('/api/blogs', (req, res) => {
                                          .spread((tag, created) => tag))
     User.findById(body.userId)
         .then(() => Blog.create(body))
-        .then(blog => Promise.all(tags).then(storedTags => blog.addTags(storedTags)).then(savedTags => blog))
+        .then(blog => Promise.all(tags).then(storedTags => blog.addTags(storedTags)).then(() => blog))
         .then(blog => Blog.findOne({ where: {id: blog.id}, include: [User, Tag]}))
-        .then(blog => res.json(blog))
+        .then(blogWithAssociations => res.json(blogWithAssociations))
         .catch(err => res.status(400).json({ err: `User with id = [${body.userId}] doesn\'t exist.`}))
 })
 
